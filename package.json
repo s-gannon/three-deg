@@ -1,0 +1,31 @@
+{
+  "name": "three-deg",
+  "version": "0.1.0",
+  "description": "Three Degrees, a web application that displays the relationships between people.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/s-gannon/three-deg.git"
+  },
+  "keywords": [
+    "three",
+    "degrees",
+    "three",
+    "degrees",
+    "relationships",
+    "graphs"
+  ],
+  "author": "Spencer Gannon, Jack Waechter",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/s-gannon/three-deg/issues"
+  },
+  "homepage": "https://github.com/s-gannon/three-deg#readme",
+  "dependencies": {
+    "graphology": "^0.25.4",
+    "sigma": "^3.0.0-beta.4"
+  }
+}
