@@ -1,0 +1,4 @@
+#!/bin/sh
+
+clang -Wall -Wextra -pedantic -lcurl -lsqlite3 -g -o server server.c
+clang -Wall -Wextra -pedantic -g -o client client.c
