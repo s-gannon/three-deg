@@ -1,10 +1,11 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse, parse_qs 
+from urllib.parse import urlparse, parse_qs
 import json 
 
 
-PORT = 6502
-IP = ''
+PORT = 8080
+IP = 'localhost'
+
 
 class UserStorageAPI(BaseHTTPRequestHandler):
 	def _set_response(self, status_code=200, content_type="text/html"):
@@ -45,5 +46,13 @@ class UserStorageAPI(BaseHTTPRequestHandler):
 
 def run(
 		server_class=HTTPServer,
-		handler_class=
-)
+		handler_class=UserStorageAPI,
+		port=PORT,
+		ip=IP):
+	server_addr = (ip, port)
+	httpd = server_class(server_addr, handler_class)
+	print(f"starting server on {ip}:{port}")
+	httpd.serve_forever()
+
+if __name__ == "__main__":
+	run()

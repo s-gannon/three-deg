@@ -1,6 +1,23 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+typedef enum {
+	NEW_PERSON,
+	ABOUT,
+	CONNECTIONS,
+	PERSON_REQUEST_TYPES_SIZE
+} PERSON_REQUEST_TYPES;
+
+typedef enum {
+	END_OF_STREAM,
+	FIRST_NAME,		//128 bytes, 127 for name and one for null terminator
+	LAST_NAME,		//128 bytes, 127 for name and one for null terminator
+	DATE_OF_BIRTH,	//11 bytes, YYYY-MM-DD and the null terminator
+	EMAIL,			//256 bytes, maximum length is 254
+	CONNECTIONS,	//4 bytes, 32 bit unsigned integer max, I assume no one has more than 2 billion connections
+	PERSON_DATA_TYPES_SIZE
+} PERSON_DATA_TYPES;
+
 #ifndef NETWORKING_H
 #define NETWORKING_H
 
@@ -47,7 +64,7 @@ int udp_socket_init(void){
 
 int address_config(struct sockaddr_in * const addr, const int PORT, const char * const IP){
 	if(!addr)
-		return -1;	//return if addr is NULL
+		return -1;	// return if addr is NULL
 	bzero(addr, sizeof(*addr));
 	
 	int using_port = (PORT ? PORT : DEFAULT_PORT);	//if port is non-zero, use port

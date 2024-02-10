@@ -20,7 +20,7 @@ This is an example program meant to represent HTTP GET
 requests from real clients. In production, we will only need
 the server. 
 */
-int main(void){
+int main(int argc, char ** argv){
 	// these two can be modified later to get from console in
 	int port = 6000;
 	char * ip_addr = "127.0.0.1";
