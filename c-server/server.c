@@ -16,6 +16,10 @@
 #define DEBUG_STATEMENTS 1
 
 int close_server = 0;
+typedef enum {
+	ABOUT,
+	CONNECTIONS
+} RECEIVED_REQUEST;
 
 void error(char * msg){
 	perror(msg);

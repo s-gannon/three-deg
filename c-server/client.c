@@ -52,7 +52,8 @@ int main(void){
 	);
 
 	if(errval < 0) error("[ERROR] Connecting to the server");
-	// sending out request to 
+	
+	// TODO: Sending requests to server, have to decide on a format
 
 	close(client_socket);
 	return EXIT_SUCCESS;
