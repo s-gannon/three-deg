@@ -4,6 +4,9 @@ CC=clang
 FLAGS="-Wall -Wextra -pedantic -g"
 LIBS="-lcurl -lsqlite3"
 
+rm -r bin
+mkdir bin
+
 cd src
 
 if [ $1 == "debug" ]; then
