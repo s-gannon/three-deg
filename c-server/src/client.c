@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
@@ -8,13 +9,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 // Personal headers
-#include "networking.h"
+#include "../lib/networking.h"
 
-void error(char * msg){
-	strcat();
-	perror(msg);
-	exit(EXIT_FAILURE);
-}
 /*
 This is an example program meant to represent HTTP GET 
 requests from real clients. In production, we will only need
@@ -37,13 +33,13 @@ int main(int argc, char ** argv){
 	client_socket = tcp_socket_init();
 
 	errval = socket_config(&client_socket);
-	if(errval < 0) error("[ERROR] Configuring server socket");
+	if(errval < 0) error("Configuring server socket");
 
 	port = address_config(&server_addr, port, ip_addr);
-	if (port < 0) error("[ERROR] Configuring server address");
+	if (port < 0) error("Configuring server address");
 
 	server_addr_len = sizeof(server_addr);
-	if(server_addr_len <= 0) error("[ERROR] Server address length");
+	if(server_addr_len <= 0) error("Server address length");
 	// connecting to the server
 	errval = connect(
 		client_socket,
@@ -51,7 +47,7 @@ int main(int argc, char ** argv){
 		sizeof(server_addr)
 	);
 
-	if(errval < 0) error("[ERROR] Connecting to the server");
+	if(errval < 0) error("Connecting to the server");
 	
 	// TODO: Sending requests to server, have to decide on a format
 

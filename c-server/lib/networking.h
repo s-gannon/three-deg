@@ -2,9 +2,9 @@
 #include <sys/socket.h>
 
 typedef enum {
-	NEW_PERSON,
-	ABOUT,
-	CONNECTIONS,
+	REQ_NEW_PERSON,
+	REQ_ABOUT,
+	REQ_RELATIONSHIPS,
 	PERSON_REQUEST_TYPES_SIZE
 } PERSON_REQUEST_TYPES;
 
@@ -14,13 +14,14 @@ typedef enum {
 	LAST_NAME,		//128 bytes, 127 for name and one for null terminator
 	DATE_OF_BIRTH,	//11 bytes, YYYY-MM-DD and the null terminator
 	EMAIL,			//256 bytes, maximum length is 254
-	CONNECTIONS,	//4 bytes, 32 bit unsigned integer max, I assume no one has more than 2 billion connections
+	RELATIONSHIPS,	//4 bytes, 32 bit unsigned integer max, I assume no one has more than 2 billion connections
 	PERSON_DATA_TYPES_SIZE
 } PERSON_DATA_TYPES;
 
 #ifndef NETWORKING_H
 #define NETWORKING_H
 
+void error(char * msg);
 int tcp_socket_init(void);
 int udp_socket_init(void);
 int address_config(struct sockaddr_in * const addr, const int PORT, const char * const IP);
@@ -34,6 +35,7 @@ int write_to_udp_socket (int * const socket, void * data, size_t data_size, stru
 #ifndef NETWORKING_SRC
 #define NETWORKING_SRC
 
+#include <errno.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -53,6 +55,11 @@ int write_to_udp_socket (int * const socket, void * data, size_t data_size, stru
 #ifndef MAX_TCP_CONNECTIONS
 #define MAX_TCP_CONNECTIONS 30
 #endif
+
+void error(char * msg){
+	printf("[ERROR] %s: %s\n", msg, strerror(errno));
+	exit(EXIT_FAILURE);
+}
 
 int tcp_socket_init(void){
 	return socket(AF_INET, SOCK_STREAM, 0);
