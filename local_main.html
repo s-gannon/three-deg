@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>SQLite Graph Visualization</title>
+	<!-- Include D3.js library -->
+	<script src="https://d3js.org/d3.v7.min.js"></script>
+	<!-- Include SQL.js library from local directory -->
+	<script src="sql-js/sql-wasm.js"></script>
+	<style>
+		/* Style attributes for nodes and links */
+		body, html {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+		}
+		svg {
+			display: block;
+			margin: auto;
+		}
+
+		.link {
+			stroke: #999;
+			stroke-opacity: 1;
+		}
+
+		.node {
+			r: 20px; /* Node size doubled */
+			fill: lightblue;
+			cursor: pointer;
+		}
+
+		.node-label {
+			font-family: Arial, sans-serif;
+			font-size: 12px;
+			fill: #333;
+			pointer-events: none;
+			text-anchor: middle;
+		}
+	</style>
+</head>
+<body>
+<div id="graph-container"></div>
+	<script>
+		// Define a global variable to hold the SQLite database
+		let db;
+
+		// Function to initialize the database and fetch data
+		function initializeDatabaseAndFetchData() {
+			// Initialize SQL.js with the provided script
+			initSqlJs({
+				locateFile: file => `sql-js/${file}`
+			}).then(function(SQL) {
+				fetch('db/main.db')
+				.then(response => response.arrayBuffer())
+				.then(buffer => {
+					// Initialize SQL.js with the provided buffer
+					db = new SQL.Database(new Uint8Array(buffer));
+					// Call function to fetch data and draw graph
+					fetchDataAndDrawGraph();
+				})
+				.catch(error => {
+					console.error('Error loading database:', error);
+				});
+			});
+		}
+
+		// Function to fetch and process data from SQLite database
+		function fetchDataAndDrawGraph() {
+			// Query to fetch data from SQLite database
+			const query = `
+				SELECT p1.FirstName || ' ' || p1.LastName AS sourceName, 
+					p2.FirstName || ' ' || p2.LastName AS targetName, 
+					c.Titles
+				FROM Connections c
+				JOIN Person p1 ON c.FromID = p1.ID
+				JOIN Person p2 ON c.ToID = p2.ID
+			`;
+			
+			// Execute the query and fetch the results
+			const results = db.exec(query);
+
+			// Process the query results to extract nodes and links data
+			const nodes = new Map();
+			const links = [];
+
+			results[0].values.forEach(row => {
+				const sourceName = row[0];
+				const targetName = row[1];
+				const titles = row[2];
+
+				// Add source and target nodes if they don't exist in the map
+				if (!nodes.has(sourceName)) {
+				nodes.set(sourceName, { name: sourceName });
+				}
+				if (!nodes.has(targetName)) {
+				nodes.set(targetName, { name: targetName });
+				}
+
+				// Add a link between source and target nodes
+				links.push({
+				source: sourceName,
+				target: targetName,
+				titles: titles
+				});
+			});
+
+			// Call the function to draw the graph
+			drawGraph(Array.from(nodes.values()), links);
+		}
+
+		// Function to draw the graph using D3.js force simulation
+		function drawGraph(nodes, links) {
+			const width = 800;
+			const height = 600;
+
+			const svg = d3.select("#graph-container")
+				.append("svg")
+				.attr("width", width)
+				.attr("height", height);
+
+			const simulation = d3.forceSimulation(nodes)
+				.force("link", d3.forceLink(links).id(d => d.name))
+				.force("charge", d3.forceManyBody().strength(-1000))
+				.force("center", d3.forceCenter(width / 2, height / 2))
+				.force("collide", d3.forceCollide().radius(30)); // Prevent overlapping nodes
+
+			const zoom = d3.zoom()
+				.scaleExtent([0.1, 10]) // Set the zoom scale limits
+				.on("zoom", zoomed);
+
+			svg.call(zoom);
+
+			function zoomed(event) {
+				const { transform } = event;
+				// Apply the zoom transformation to the entire SVG content
+				svg.attr("transform", transform);
+			}
+
+			const link = svg.selectAll(".link")
+				.data(links)
+				.enter()
+				.append("line")
+				.attr("class", "link");
+
+			const node = svg.selectAll(".node")
+				.data(nodes)
+				.enter()
+				.append("circle")
+				.attr("class", "node")
+				.call(d3.drag() // Enable node dragging
+				.on("start", dragstarted)
+				.on("drag", dragged)
+				.on("end", dragended));
+
+			const nodeLabels = svg.selectAll(".node-label")
+				.data(nodes)
+				.enter()
+				.append("text")
+				.attr("class", "node-label")
+				.text(d => d.name)
+				.attr("text-anchor", "middle")
+				.attr("dy", 5);
+
+			simulation.on("tick", () => {
+				link
+				.attr("x1", d => d.source.x)
+				.attr("y1", d => d.source.y)
+				.attr("x2", d => d.target.x)
+				.attr("y2", d => d.target.y);
+
+				node
+				.attr("cx", d => d.x)
+				.attr("cy", d => d.y);
+
+				nodeLabels
+				.attr("x", d => d.x)
+				.attr("y", d => d.y);
+			});
+
+			function dragstarted(event, d) {
+				if (!event.active) simulation.alphaTarget(0.3).restart();
+				d.fx = d.x;
+				d.fy = d.y;
+			}
+
+			function dragged(event, d) {
+				d.fx = event.x;
+				d.fy = event.y;
+			}
+
+			function dragended(event, d) {
+				if (!event.active) simulation.alphaTarget(0);
+				d.fx = null;
+				d.fy = null;
+			}
+			// Great for debugging in the console / editing db
+			node.on("click", (event, d) => {
+				console.log("Clicked node:", d);
+			});
+		}
+
+		// Call the function to initialize database and fetch data
+		initializeDatabaseAndFetchData();
+
+		window.addEventListener('resize', function() {
+			d3.select("svg")
+				.attr("width", "100%")
+				.attr("height", "100%")
+				.attr("viewBox", [0, 0, window.innerWidth, window.innerHeight]);
+		});
+	</script>
+</body>
+</html>

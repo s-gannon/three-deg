@@ -1,4 +1,21 @@
 #!/bin/sh
 
-clang -Wall -Wextra -pedantic -lcurl -lsqlite3 -g -o server server.c
-clang -Wall -Wextra -pedantic -g -o client client.c
+CC=clang
+FLAGS="-Wall -Wextra -pedantic -g"
+LIBS="-lcurl -lsqlite3"
+
+rm -r bin
+mkdir bin
+
+cd src
+
+if [ $1 == "debug" ]; then
+	FLAGS+=" -DDEBUG_STATEMENTS=1"
+else
+	FLAGS+=" -DDEBUG_STATEMENTS=0"
+fi
+$CC $FLAGS $LIBS server.c -o server
+$CC $FLAGS client.c -o client 
+
+mv server ../bin/
+mv client ../bin/
