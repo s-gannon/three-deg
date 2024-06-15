@@ -1,5 +1,6 @@
 #!./../.venv/bin/python
 import sqlite3
+#https://faker.readthedocs.io/en/master/	
 from faker import Faker
 
 fake = Faker("en_US")
